@@ -37,3 +37,22 @@ Grafo* cria_Grafo(int nro_verts, int Gmax, int eh_ponderado){
     }
     return gr;
 }
+
+// Destruindo um grafo
+void libera_Grafo(Grafo* gr){
+    if(qr){
+        for(int i=0; i<gr->nro_vert; i++){
+            free(gr->arestas[i]);
+        }
+        free(gr->arestas);
+
+        if(gr->eh_ponderado){
+            for(int i=0; i<gr->nro_vert; i++){
+                free(gr->pesos[i]);
+            }
+            free(gr->pesos);
+        }
+        free(gr->grau);
+        free(gr);
+    }
+}
