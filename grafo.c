@@ -56,3 +56,25 @@ void libera_Grafo(Grafo* gr){
         free(gr);
     }
 }
+
+// Inserindo uma aresta
+
+int insereAresta(Grafo* gr, int orig, int dest, int digrafo, float peso){
+    // Verificando casos onde a inserção não é possível
+    if(!gr) return 0;
+    if(orig<0 || orig>=gr->nro_vert) return 0;
+    if(dest<0 || dest>= gr->nro_vert) return 0;
+    if(gr->grau[orig] == gr->Gmax) return 0;
+
+    // Inserindo a aresta de fato
+    gr->arestas[orig][gr->grau[orig]] = dest; // gr->gra[orig], atuará como um contador onde deve ser inserido o destino para explicitar a relação, pois ele guarda a quantidade de nós já inseridos, começando com 0 e indo até o grau de fato, onde a inserção irá falhar devido à verificação de exceções
+    if(gr->eh_ponderado){
+        gr->pesos[orig][gr->grau[orig]] = peso;
+    }
+    gr->grau[orig]++;
+    if(!digrafo){
+        // Se não for um digrafo, tanto destino se liga a origem quanto origem se liga a destino, é mutua a reolação
+        return insereAresta(gr,dest,orig,1,peso);
+    }
+    return 1;
+}
