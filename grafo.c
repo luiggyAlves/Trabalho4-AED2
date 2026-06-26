@@ -78,3 +78,7 @@ int insereAresta(Grafo* gr, int orig, int dest, int digrafo, float peso){
     }
     return 1;
 }
+
+// Remover uma aresta (depois)
+
+// Busca em profundidade
