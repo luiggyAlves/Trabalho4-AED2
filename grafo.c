@@ -2,20 +2,11 @@
 #include <stdlib.h>
 #include "grafo.h"
 
-struct grafo{
-    int eh_ponderado; // define se as arestas tem peso ou não
-    int nro_vert; // define o número de vértices que o grafo terá
-    int Gmax; // define o grau de conectitivade máximo de cada vértices, ou seja, a quantidade de arestas que um grafo poderá possuir o conectando a outro
-    int** arestas; // array de ponteiros onde a lista encadeada contendo as arestas será alocada
-    float** pesos; // se o grafo for ponderado, aqui será alocados a matriz de pesos para cada aresta.
-    int* grau; // vetor que armazenará a quantidade de arestas já alocadas naquele vértice (grau de conectividade)
-};
-
 // Criando e destruindo um grafo
-Grafo* cria_Grafo(int nro_verts, int Gmax, int eh_ponderado){
+Grafo* cria_Grafo(int nro_vert, int Gmax, int eh_ponderado){
     // alocando um grafo na memória
     Grafo* gr =  (Grafo*) malloc(sizeof(struct grafo));
-    if(qr){ // verificando se a alocação deu certo
+    if(gr){ // verificando se a alocação deu certo
         // preenchendo as informações básicas do struct
         gr->nro_vert = nro_vert;
         gr->Gmax = Gmax;
@@ -40,7 +31,7 @@ Grafo* cria_Grafo(int nro_verts, int Gmax, int eh_ponderado){
 
 // Destruindo um grafo
 void libera_Grafo(Grafo* gr){
-    if(qr){
+    if(gr){
         for(int i=0; i<gr->nro_vert; i++){
             free(gr->arestas[i]);
         }
@@ -82,3 +73,59 @@ int insereAresta(Grafo* gr, int orig, int dest, int digrafo, float peso){
 // Remover uma aresta (depois)
 
 // Busca em profundidade
+// função recebe o grafo, o vértice inicial, um array que conterá o caminho dos vértices visitados e um contador que nos ajudará a medir quais vértices já foram visitados
+void buscaProfundidade(Grafo* gr, int ini, int* visitado, int cont){
+    visitado[ini] = cont; // vértice inicial marcado como visitado
+    for(int i=0; i<gr->grau[ini]; i++){
+        if(!visitado[gr->arestas[ini][i]]){ // irá chamar a função recursivamente para os vizinhos não visitados ainda
+            buscaProfundidade(gr,gr->arestas[ini][i], visitado, cont+1);
+        }
+    }
+}
+
+void buscaProfundidade_Grafo(Grafo *gr, int ini, int *visitado){
+    int cont = 1;
+    for(int i=0; i<gr->nro_vert; i++) {visitado[i]=0;}
+    buscaProfundidade(gr, ini, visitado, cont);
+}
+
+// Busca em profundidade adaptada para encontrar TODOS os caminhos entre um vértice inicial e um vértice alvo
+// recebe o grafo, o vértice atual, o destino, o vetor de visitados, o vetor que guarda o caminho em construção, a posição atual nesse vetor e um contador de caminhos encontrados
+void buscaTodosCaminhos(Grafo* gr, int atual, int destino, int* visitado, int* caminho, int pos, int* contador){
+    visitado[atual] = 1; // marca o vértice como visitado apenas para este ramo da busca
+    caminho[pos] = atual; // guarda o vértice atual na posição correspondente do caminho
+    pos++;
+
+    if(atual == destino){ // achou o destino, então o caminho construído até aqui é válido
+        (*contador)++;
+        printf("  %2d. ", *contador);
+        for(int i=0; i<pos; i++){
+            printf("%d", caminho[i]);
+            if(i < pos-1) printf(" -> ");
+        }
+        printf("\n");
+    } else {
+        for(int i=0; i<gr->grau[atual]; i++){
+            int vizinho = gr->arestas[atual][i];
+            if(!visitado[vizinho]){ // só avança para vizinhos que não estão no caminho atual
+                buscaTodosCaminhos(gr, vizinho, destino, visitado, caminho, pos, contador);
+            }
+        }
+    }
+
+    visitado[atual] = 0; // desmarca ao retornar (backtracking), permitindo que o vértice seja usado em outros caminhos
+}
+
+int buscaTodosCaminhos_Grafo(Grafo* gr, int ini, int destino){
+    int* visitado = (int*) calloc(gr->nro_vert, sizeof(int));
+    int* caminho = (int*) malloc(gr->nro_vert * sizeof(int));
+    int contador = 0;
+    buscaTodosCaminhos(gr, ini, destino, visitado, caminho, 0, &contador);
+    if(contador == 0){
+        printf("  (nenhum caminho encontrado)\n");
+    }
+    free(visitado);
+    free(caminho);
+    return contador;
+}
+
